@@ -42,6 +42,7 @@ class BaseShipClass:
 
         self.resting_range = None
         self.position = None
+        self.next_position = None
 
         self.turrets = []
         self.defenses = []
@@ -73,6 +74,7 @@ class BaseShipClass:
     def build(self):
         self.my_id = uuid.uuid4()
         self.max_range = max([t.weapon.range for t in self.turrets])
+        self.resting_range = self.max_range # This depends on the computer not the range but i needed it to be set somehow
 
     def add_turret(self, turret_type):
         print(f"Adding turret type {turret_type}")
@@ -86,9 +88,14 @@ class BaseShipClass:
             self.resting_range = resting_range
         return self.resting_range
 
-    def calculate_gun_availability(self):
-        for turret in self.turrets:
-            print(turret.countdown_until_ready_to_shoot)
+    # def calculate_gun_availability(self):
+    #     for turret in self.turrets:
+    #         print(turret.countdown_until_ready_to_shoot)
+
+    def move_ship(self):
+        if self.next_position:
+            self.position = self.next_position
+            self.next_position = None
 
 
 class Corvette(BaseShipClass):

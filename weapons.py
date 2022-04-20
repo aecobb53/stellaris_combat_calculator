@@ -83,6 +83,9 @@ class Laser:
             hull_points = 0
         return shield_points, armor_points, hull_points
 
+    def reduce_cooldown(self, time):
+        self.time_until_next_fire -= time
+
 # plasma_launcher
 # lance
 
