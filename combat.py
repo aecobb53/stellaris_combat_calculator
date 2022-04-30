@@ -28,14 +28,28 @@ class Combat:
         self.day_elapsed = 0.0
         self.ally_ships = []
         self.axes_ships = []
-        self.ally_ships_destroyed = []
-        self.axes_ships_destroyed = []
+        self.ally_ships_destroyed = None
+        self.axes_ships_destroyed = None
+
+        self.cost_limiter_combat_limit = None
+        self.cost_limiter_build_time = None
+        self.cost_limiter_cost_alloys = None
+        self.cost_limiter_cost_crystals = None
+        self.cost_limiter_cost_motes = None
+        self.cost_limiter_cost_gasses = None
+        self.cost_limiter_power_required = None
 
     def _ship_distance(self, ship1, ship2):
+        """
+        Calculate the distance between two ship objects
+        """
         ranges = {ship1.position, ship2.position}
         return max(ranges) - min(ranges)
 
     def _ship_target_options(self, ship, targets):
+        """
+        From a ship's perspective of a list of ship objects, which ones are within range of the longest ranged gun?
+        """
         target = targets[0]
         distance = self._ship_distance(ship, target)
         if distance > ship.max_range:
@@ -43,15 +57,27 @@ class Combat:
         return target
 
     def _sort_ship_list(self, ship_list):
+        """
+        Return a sorted list of ships based on closest to furthest in distance
+        """
         ship_list.sort(key=return_calculated_ship_range)
         return ship_list
 
     def _find_ship_by_id(self, ship_id, ship_list):
+        """
+        Return a ship object based on the ship_id
+        """
         for ship in ship_list:
             if ship.my_id == ship_id:
                 return ship
 
     def _ship_movement(self, ship, enemy_swarm, percent_of_day_progressed):
+        """
+        Based on criteria, move the ship.
+        If the ship does not have a target, set target to the average location of the enemy fleet
+        If the target is further away than the resting distance, move based % of the day incremented
+        If the target is closer than the resting distance, move a tenth of what it would have moved
+        """
         target_position = None
         speed = ship.speed
         if ship.target_id:
@@ -76,13 +102,33 @@ class Combat:
         new_position = ship.position + (sign * ship.speed * percent_of_day_progressed)
         return new_position
 
+    def _string_width(self, value, length, fill=' '):
+        """
+        This is for display purposes. It sets a string to a lenght by filling it in
+        """
+        while len(value) < length:
+            value += fill
+        return value[0:length]
+
+
     def start_fight(self):
+        """
+        Reset starting positions and destroyed lists of ships
+        """
         for ship in self.ally_ships:
             ship.position = -self.starting_range
         for ship in self.axes_ships:
             ship.position = self.starting_range
+        self.ally_ships_destroyed = []
+        self.axes_ships_destroyed = []
 
     def assign_targets(self):
+        """
+        Select a target based on criteria
+        Select the closest ship that isnt targeted already
+        If all are already targeted, reset the targets list and pick one
+        If there are no targets in range, do nothing
+        """
         self.ally_ships.sort(key=return_calculated_ship_range)
         self.axes_ships.sort(key=return_calculated_ship_range)
         ally_list = []
@@ -124,6 +170,10 @@ class Combat:
                 ally_list.remove(target)
 
     def exchange_blasts(self):
+        """
+        For every gun that can fire, fire at the target
+        Then reset the gun reload timer
+        """
         self.ally_ships.sort(key=return_calculated_ship_range)
         self.axes_ships.sort(key=return_calculated_ship_range)
         for ship in self.ally_ships:
@@ -156,15 +206,18 @@ class Combat:
 
         for ally_ship in self.ally_ships.copy():
             if ally_ship.hull_points <= 0:
-                self.ally_ships_destroyed.append(ally_ships)
+                self.ally_ships_destroyed.append(ally_ship)
                 self.ally_ships.remove(ally_ship)
 
         for axes_ship in self.axes_ships.copy():
             if axes_ship.hull_points <= 0:
-                self.axes_ships_destroyed.append(axes_ships)
+                self.axes_ships_destroyed.append(axes_ship)
                 self.axes_ships.remove(axes_ship)
 
     def move_ships(self, percent_of_day_progressed=1):
+        """
+        Orchestrate each ship in a fleet's movements
+        """
         # print(f"Day percent progress {percent_of_day_progressed}")
         for ship in self.ally_ships:
             new_position = self._ship_movement(ship, self.axes_ships, percent_of_day_progressed)
@@ -183,6 +236,9 @@ class Combat:
             ship.move_ship()
 
     def update_weapons_cooldown(self, time):
+        """
+        For each wepon on every ship, update the timer
+        """
         for ship in self.ally_ships:
             for turret in ship.turrets:
                 turret.weapon.reduce_cooldown(time)
@@ -192,20 +248,35 @@ class Combat:
                 turret.weapon.reduce_cooldown(time)
 
     def retro(self):
+        """
+        Return results from a battle
+        """
         results = {
             'time': float(int(self.day_elapsed * 100) / 100),
-            "living_ships": {
-                'ally': [str(type(s)) for s in self.ally_ships],
-                'axes': [str(type(s)) for s in self.axes_ships],
+            'living_ships': {
+                'ally': copy.deepcopy(self.ally_ships),
+                'axes': copy.deepcopy(self.axes_ships),
+            },
+            'destroyed_ships': {
+                'ally': copy.deepcopy(self.ally_ships_destroyed),
+                'axes': copy.deepcopy(self.axes_ships_destroyed),
             },
         }
+
+        if len(self.ally_ships) > len(self.axes_ships):
+            results['victory'] = True
+        else:
+            results['victory'] = False
         return results
 
     def commence_combat(self, day_percent=0.1):
+        """
+        Orchestrate a single battle
+        """
         self.start_fight()
         while self.ally_ships and self.axes_ships:
-            if int(self.day_elapsed * 100) % 100 == 0:
-                print(f"day: {int(self.day_elapsed * 100) / 100}")
+            # if int(self.day_elapsed * 100) % 100 == 0:
+            #     print(f"day: {int(self.day_elapsed * 100) / 100}")
             self.move_ships(percent_of_day_progressed=day_percent)
             self.update_weapons_cooldown(time=day_percent)
             self.day_elapsed += day_percent
@@ -216,6 +287,241 @@ class Combat:
             # print([s.position for s in self.axes_ships])
         return self.retro()
 
+    def iterative_battle(
+        self,
+        ally_list,
+        axes_list,
+        day_precet=0.1,
+        iterations=10,
+    ):
+        """
+        Orchestrate multiple battles
+        """
+        results = {
+            'success_rate': None,
+            # 'victory': None,
+            'track_record': {},
+        }
+        track_record = []
+        for index in range(iterations):
+            self.ally_ships = copy.deepcopy(ally_list)
+            self.axes_ships = copy.deepcopy(axes_list)
+
+            result = self.commence_combat(day_percent=day_precet)
+
+            results['track_record'][index] = result
+            track_record.append(result['victory'])
+        results['success_rate'] = len([1 for r in track_record if r]) / iterations
+        return results
+
+    def calculate_cost(self, ships):
+        """
+        Calculate the cost in resources of a fleet
+        """
+        combat_limit = 0
+        build_time = 0
+        cost_alloys = 0
+        cost_crystals = 0
+        cost_motes = 0
+        cost_gasses = 0
+        power_required = 0
+        for ship in ships:
+            combat_limit += ship.command_points if ship.command_points else 0
+            # fleet_limit += ship.fleet_limit if ship.fleet_limit else 0
+            build_time += ship.build_time if ship.build_time else 0
+            cost_alloys += ship.cost_alloys if ship.cost_alloys else 0
+            cost_crystals += ship.cost_crystals if ship.cost_crystals else 0
+            cost_motes += ship.cost_motes if ship.cost_motes else 0
+            cost_gasses += ship.cost_gasses if ship.cost_gasses else 0
+            for turret in ship.turrets:
+                cost_alloys += turret.weapon.cost_alloys if turret.weapon.cost_alloys else 0
+                cost_crystals += turret.weapon.cost_crystals if turret.weapon.cost_crystals else 0
+                cost_motes += turret.weapon.cost_motes if turret.weapon.cost_motes else 0
+                cost_gasses += turret.weapon.cost_gasses if turret.weapon.cost_gasses else 0
+                power_required += turret.weapon.power_required if turret.weapon.power_required else 0
+        response = {
+            'combat_limit': combat_limit,
+            'build_time': build_time,
+            'cost_alloys': cost_alloys,
+            'cost_crystals': cost_crystals,
+            'cost_motes': cost_motes,
+            'cost_gasses': cost_gasses,
+            'power_required': power_required,
+        }
+        return response
+
+    def fleet_too_expensive(
+        self,
+        combat_limit = None,
+        build_time=None,
+        cost_alloys=None,
+        cost_crystals=None,
+        cost_motes=None,
+        cost_gasses=None,
+        power_required=None,
+        ships = None,
+    ):
+        """
+        If the cost of a fleet is under the limit values return True
+        else return False
+        """
+
+        if build_time is None:
+            build_time = self.cost_limiter_build_time
+        if cost_alloys is None:
+            cost_alloys = self.cost_limiter_cost_alloys
+        if cost_crystals is None:
+            cost_crystals = self.cost_limiter_cost_crystals
+        if cost_motes is None:
+            cost_motes = self.cost_limiter_cost_motes
+        if cost_gasses is None:
+            cost_gasses = self.cost_limiter_cost_gasses
+
+        if ships is None:
+            ships = self.ally_ships
+
+        fleet_cost = self.calculate_cost(ships)
+
+        if build_time:
+            if fleet_cost['build_time'] > build_time:
+                return False
+        if cost_alloys:
+            if fleet_cost['cost_alloys'] > cost_alloys:
+                return False
+        if cost_crystals:
+            if fleet_cost['cost_crystals'] > cost_crystals:
+                return False
+        if cost_motes:
+            if fleet_cost['cost_motes'] > cost_motes:
+                return False
+        if cost_gasses:
+            if fleet_cost['cost_gasses'] > cost_gasses:
+                return False
+        return True
+
+    def assign_default_costs(
+        self,
+        combat_limit = None,
+        build_time = None,
+        cost_alloys = None,
+        cost_crystals = None,
+        cost_motes = None,
+        cost_gasses = None,
+    ):
+        """
+        Assign default costs
+        """
+        if combat_limit:
+            self.cost_limiter_combat_limit = combat_limit
+        if build_time:
+            self.cost_limiter_build_time = build_time
+        if cost_alloys:
+            self.cost_limiter_cost_alloys = cost_alloys
+        if cost_crystals:
+            self.cost_limiter_cost_crystals = cost_crystals
+        if cost_motes:
+            self.cost_limiter_cost_motes = cost_motes
+        if cost_gasses:
+            self.cost_limiter_cost_gasses = cost_gasses
+
+    def fill_fleet(self, ship, fleet, fleet_limit):
+        """
+        Keep adding ships until the fleet is full based on the resource limits
+        """
+        shadow_fleet = copy.deepcopy(fleet)
+        expense = self.calculate_cost(fleet)
+        print(expense)
+        if expense:
+            while expense:
+                print('while loop iteration')
+                shadow_fleet.append(copy.deepcopy(ship))
+                expense = self.fleet_too_expensive(
+                    ships=shadow_fleet,
+                )
+                
+                print(len(shadow_fleet))
+                # print(expense)
+
+            fleet = shadow_fleet[:-1]
+
+        print(len(fleet))
+
+        return fleet
+        
+
+    # def find_domination_count(self):
+        
+
+    def show_results(self, results):
+        """
+        Display the results of many battles
+        """
+        print(results.keys())
+        for index, record in results['track_record'].items():
+            print('')
+            print('')
+            print(f"Trial: {index}")
+            print(f"  Duration: {record['time']}")
+            print(f"  Victory: {record['victory']}")
+
+            table = []
+            str_width = 10
+            dead_space = '-'
+
+            # print(range(max(len(record['living_ships']['ally']), len(record['living_ships']['axes']))))
+            table.append('|'.join([self._string_width('ally', str_width), self._string_width('axes', str_width)]))
+
+            # Survived
+            for index in range(max(len(record['living_ships']['ally']), len(record['living_ships']['axes']))):
+                try:
+                    ally_ship = f"{record['living_ships']['ally'][index].__class__.__name__}"
+                except:
+                    ally_ship = dead_space
+                try:
+                    axes_ship = f"{record['living_ships']['axes'][index].__class__.__name__}"
+                except:
+                    axes_ship = dead_space
+                ally_ship = self._string_width(ally_ship, str_width)
+                axes_ship = self._string_width(axes_ship, str_width)
+                table.append('|'.join([ally_ship, axes_ship]))
+            table.append('')
+
+            # Destroyed
+            for index in range(max(len(record['destroyed_ships']['ally']), len(record['destroyed_ships']['axes']))):
+                try:
+                    ally_ship_d = f"D-{record['destroyed_ships']['ally'][index].__class__.__name__}"
+                except:
+                    ally_ship_d = dead_space
+                try:
+                    axes_ship_d = f"D-{record['destroyed_ships']['axes'][index].__class__.__name__}"
+                except:
+                    axes_ship_d = dead_space
+                ally_ship_d = self._string_width(ally_ship_d, str_width)
+                axes_ship_d = self._string_width(axes_ship_d, str_width)
+                table.append('|'.join([ally_ship_d, axes_ship_d]))
+            for line in table:
+                print(line)
+        print('')
+        print('')
+        print('Total Stats:')
+        print(f"  Victory Rate: {results['success_rate']*100}%")
+
+
+
+# for ship in 
+        #     itteration_table = []
+        #     if len(record['living_ships']['ally']) > len(record['living_ships']['axes']):
+        #         difference = len(record['living_ships']['ally']) - len(record['living_ships']['axes'])
+        #         diff_array = ['-' for i in range(difference)]
+        #         record['living_ships']['axes'].extend(diff_array)
+        #     elif len(record['living_ships']['ally']) < len(record['living_ships']['axes']):
+        #         difference = len(record['living_ships']['axes']) - len(record['living_ships']['ally'])
+        #         diff_array = ['-' for i in range(difference)]
+        #         record['living_ships']['ally'].extend(diff_array)
+        #     for ally_ship, axes_ship in zip(record['living_ships']['ally'], record['living_ships']['axes']):
+        #         print(ally_ship, axes_ship)
+        #     # print(record)
+        # # for record in results['track_record']
 
 ally_ships = []
 axes_ships = []
@@ -237,7 +543,7 @@ ds.turrets[0].set_weapon('laser')
 ds.turrets[1].set_weapon('laser')
 
 # Ally composition
-# build_fleet(co, ally_ships, 4)
+build_fleet(co, ally_ships, 1)
 build_fleet(ds, ally_ships, 4)
 
 # Axes composition
@@ -250,13 +556,51 @@ for ship in axes_ships:
     ship.build()
 
 combat = Combat()
-combat.ally_ships = ally_ships
-combat.axes_ships = axes_ships
+# combat.ally_ships = ally_ships
+# combat.axes_ships = axes_ships
 
-results = combat.commence_combat()
-print(json.dumps(results, indent=2))
+# results = combat.commence_combat()
+# print(json.dumps(results, indent=2))
+
+
+if False:
+    combat.ally_ships = ally_ships
+    combat.axes_ships = axes_ships
+
+    combat.assign_default_costs(
+        build_time=None,
+        cost_alloys=2000,
+        cost_crystals=None,
+        cost_motes=None,
+        cost_gasses=None,
+    )
+
+    ally_ships = combat.fill_fleet(
+        co,
+        ally_ships,
+        100
+    )
+    print(len(ally_ships))
+
+    print(combat.calculate_cost(combat.ally_ships))
+    for ship in ally_ships:
+        print(ship)
+
+    print('exiting')
+    exit()
+
+result = combat.iterative_battle(
+    ally_list=ally_ships,
+    axes_list=axes_ships,
+    day_precet=0.1,
+    iterations=100,
+)
+combat.show_results(result)
+# print(result)
+
 # print(results[0])
 # print(results[1])
+
 # print(combat.__dict__)
 
 # print('')
@@ -302,3 +646,4 @@ print(json.dumps(results, indent=2))
 #     # print(ship.armor_points)
 #     # print(ship.shield_points)
 
+# )
