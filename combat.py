@@ -110,6 +110,10 @@ class Combat:
             value += fill
         return value[0:length]
 
+    def _float_sizer(self, number, sig_figs):
+        num = str(number).split('.')
+        num[1] = num[1][:sig_figs]
+        return float('.'.join(num))
 
     def start_fight(self):
         """
@@ -261,7 +265,37 @@ class Combat:
                 'ally': copy.deepcopy(self.ally_ships_destroyed),
                 'axes': copy.deepcopy(self.axes_ships_destroyed),
             },
+            'hull': {
+                'ally_starting': [],
+                'ally_ending': [],
+                'axes_starting': [],
+                'axes_ending': [],
+                'total_ally_starting': 0,
+                'total_ally_ending': 0,
+                'total_axes_starting': 0,
+                'total_axes_ending': 0,
+                'total_ally_loss': 0,
+                'total_axes_loss': 0,
+            }
         }
+
+        # Ship hull damage
+        results['hull']['ally_starting'].extend([s.default_hull_points for s in self.ally_ships])
+        results['hull']['ally_starting'].extend([s.default_hull_points for s in self.ally_ships_destroyed])
+        results['hull']['axes_starting'].extend([s.default_hull_points for s in self.axes_ships])
+        results['hull']['axes_starting'].extend([s.default_hull_points for s in self.axes_ships_destroyed])
+        results['hull']['ally_ending'].extend([s.hull_points for s in self.ally_ships])
+        results['hull']['ally_ending'].extend([s.hull_points for s in self.ally_ships_destroyed])
+        results['hull']['axes_ending'].extend([s.hull_points for s in self.axes_ships])
+        results['hull']['axes_ending'].extend([s.hull_points for s in self.axes_ships_destroyed])
+
+        results['hull']['total_ally_starting'] = sum(results['hull']['ally_starting'])
+        results['hull']['total_ally_ending'] = sum(results['hull']['ally_ending'])
+        results['hull']['total_axes_starting'] = sum(results['hull']['axes_starting'])
+        results['hull']['total_axes_ending'] = sum(results['hull']['axes_ending'])
+
+        results['hull']['total_ally_loss'] = results['hull']['total_ally_starting'] - results['hull']['total_ally_ending']
+        results['hull']['total_axes_loss'] = results['hull']['total_axes_starting'] - results['hull']['total_axes_ending']
 
         if len(self.ally_ships) > len(self.axes_ships):
             results['victory'] = True
@@ -430,23 +464,72 @@ class Combat:
         """
         shadow_fleet = copy.deepcopy(fleet)
         expense = self.calculate_cost(fleet)
-        print(expense)
+        # print(expense)
         if expense:
             while expense:
-                print('while loop iteration')
+                # print('while loop iteration')
                 shadow_fleet.append(copy.deepcopy(ship))
                 expense = self.fleet_too_expensive(
                     ships=shadow_fleet,
                 )
                 
-                print(len(shadow_fleet))
-                # print(expense)
+                # print(len(shadow_fleet))
+                # # print(expense)
 
             fleet = shadow_fleet[:-1]
 
-        print(len(fleet))
+        # print(len(fleet))
 
         return fleet
+
+    def iterativly_fill_fleet(self, ally_list, axes_list, fill_list, fleet_limit, attempt_count=10):
+        """
+        For each ship in fill_list, try a number of combats and return the results
+        """
+        for test_ship in fill_list:
+
+            print('')
+            print(f"Test ship: {test_ship}")
+
+            test_ally_ships = self.fill_fleet(
+                ship=test_ship,
+                fleet=copy.deepcopy(ally_list),
+                fleet_limit=100
+            )
+            test_axes_ships = copy.deepcopy(axes_list)
+
+            for ship in test_ally_ships:
+                ship.build()
+            for ship in test_axes_ships:
+                ship.build()
+
+            print(self.calculate_cost(test_ally_ships))
+            print(len(test_ally_ships))
+
+            result = self.iterative_battle(
+                ally_list=test_ally_ships,
+                axes_list=test_axes_ships,
+                day_precet=0.1,
+                iterations=10,
+            )
+            # print(f"ally ships: {len(self.ally_ships)}, KIA: {len(self.ally_ships_destroyed)}")
+            # print(f"axes ships: {len(self.axes_ships)}, KIA: {len(self.axes_ships_destroyed)}")
+            ally_loss_list = [r['hull']['total_ally_loss'] for i, r in result['track_record'].items()]
+            average_ally_loss = sum(ally_loss_list) / len(ally_loss_list)
+            # print(f"average_ally_loss: {average_ally_loss}")
+            axes_loss_list = [r['hull']['total_axes_loss'] for i, r in result['track_record'].items()]
+            average_axes_loss = sum(axes_loss_list) / len(axes_loss_list)
+            # print(f"average_axes_loss: {average_axes_loss}")
+            percent_loss_success = average_ally_loss / average_axes_loss
+            result['percent_loss_success'] = percent_loss_success
+            # print(f"percent {percent_loss_success}")
+
+
+            print(f"Victory Percentage: {self._float_sizer(result['success_rate'] * 100, 2)}%")
+            print(f"Percent Loss Success Rate: {self._float_sizer(result['percent_loss_success'] * 100, 2)}%")
+            # Percent cost to produce navies
+            # Time to complete battles
+            print('')
         
 
     # def find_domination_count(self):
@@ -547,13 +630,13 @@ build_fleet(co, ally_ships, 1)
 build_fleet(ds, ally_ships, 4)
 
 # Axes composition
-build_fleet(co, axes_ships, 10)
-build_fleet(ds, axes_ships, 1)
+build_fleet(co, axes_ships, 7)
+build_fleet(ds, axes_ships, 7)
 
-for ship in ally_ships:
-    ship.build()
-for ship in axes_ships:
-    ship.build()
+# for ship in ally_ships:
+#     ship.build()
+# for ship in axes_ships:
+#     ship.build()
 
 combat = Combat()
 # combat.ally_ships = ally_ships
@@ -562,88 +645,147 @@ combat = Combat()
 # results = combat.commence_combat()
 # print(json.dumps(results, indent=2))
 
-
-if False:
-    combat.ally_ships = ally_ships
-    combat.axes_ships = axes_ships
-
-    combat.assign_default_costs(
-        build_time=None,
-        cost_alloys=2000,
-        cost_crystals=None,
-        cost_motes=None,
-        cost_gasses=None,
-    )
-
-    ally_ships = combat.fill_fleet(
-        co,
-        ally_ships,
-        100
-    )
-    print(len(ally_ships))
-
-    print(combat.calculate_cost(combat.ally_ships))
-    for ship in ally_ships:
-        print(ship)
-
-    print('exiting')
-    exit()
-
-result = combat.iterative_battle(
+print('')
+print('')
+print('combat iterative test')
+combat.assign_default_costs(
+    build_time=None,
+    cost_alloys=2000,
+    cost_crystals=None,
+    cost_motes=None,
+    cost_gasses=None,
+)
+combat.iterativly_fill_fleet(
     ally_list=ally_ships,
     axes_list=axes_ships,
-    day_precet=0.1,
-    iterations=100,
+    fill_list=[
+        co,
+        ds
+    ],
+    fleet_limit=100,
+    attempt_count=10,
 )
-combat.show_results(result)
-# print(result)
-
-# print(results[0])
-# print(results[1])
-
-# print(combat.__dict__)
-
-# print('')
-# print('')
-# print('')
-# combat.start_fight()
-
-# itterable = 5000000
-
-# day_percent = 0.1
-
-# while combat.ally_ships and combat.axes_ships:
-#     if itterable <= 0:
-#         break
-#     print('')
-#     print('---')
-#     print([s.position for s in combat.ally_ships])
-#     print([s.position for s in combat.axes_ships])
-
-#     print([s.hull_points for s in combat.ally_ships])
-#     print([s.hull_points for s in combat.axes_ships])
-#     combat.move_ships(percent_of_day_progressed=0.1)
-#     combat.day_elapsed += day_percent
-#     combat.assign_targets()
-#     combat.exchange_blasts()
-#     itterable -= 1
-
-# print(f"Time elapsed: {float(int(combat.day_elapsed * 100) / 100)} days")
-# for ship in combat.ally_ships:
-#     print('')
-#     print(ship)
-#     # print(ship.position)
-#     # print(ship.hull_points)
-#     # print(ship.armor_points)
-#     # print(ship.shield_points)
 
 
-# for ship in combat.axes_ships:
-#     print('')
-#     print(ship)
-#     # print(ship.position)
-#     # print(ship.hull_points)
-#     # print(ship.armor_points)
-#     # print(ship.shield_points)
+# if False:
+#     # combat.ally_ships = ally_ships
+#     # combat.axes_ships = axes_ships
 
+#     combat.assign_default_costs(
+#         build_time=None,
+#         cost_alloys=2000,
+#         cost_crystals=None,
+#         cost_motes=None,
+#         cost_gasses=None,
+#     )
+
+#     ally_ships = combat.fill_fleet(
+#         ship=co,
+#         fleet=ally_ships,
+#         fleet_limit=100
+#     )
+#     # print(len(ally_ships))
+
+#     # print(combat.calculate_cost(combat.ally_ships))
+#     # for ship in ally_ships:
+#     #     print(ship)
+
+#     for ship in ally_ships:
+#         ship.build()
+#     for ship in axes_ships:
+#         ship.build()
+
+
+#     result = combat.iterative_battle(
+#         ally_list=ally_ships,
+#         axes_list=axes_ships,
+#         day_precet=0.1,
+#         iterations=10,
+#     )
+#     print(f"Victory Percentage: {result['success_rate'] * 100}%")
+#     # combat.show_results(result)
+
+
+
+#     print('exiting')
+#     exit()
+# else:
+#     print('combat iterative test')
+#     combat.assign_default_costs(
+#         build_time=None,
+#         cost_alloys=2000,
+#         cost_crystals=None,
+#         cost_motes=None,
+#         cost_gasses=None,
+#     )
+#     combat.iterativly_fill_fleet(
+#         ally_list=ally_ships,
+#         axes_list=axes_ships,
+#         fill_list=[
+#             co,
+#             ds
+#         ],
+#         fleet_limit=100,
+#         attempt_count=5,
+#     )
+#     exit()
+
+
+# result = combat.iterative_battle(
+#     ally_list=ally_ships,
+#     axes_list=axes_ships,
+#     day_precet=0.1,
+#     iterations=100,
 # )
+# combat.show_results(result)
+# # print(result)
+
+# # print(results[0])
+# # print(results[1])
+
+# # print(combat.__dict__)
+
+# # print('')
+# # print('')
+# # print('')
+# # combat.start_fight()
+
+# # itterable = 5000000
+
+# # day_percent = 0.1
+
+# # while combat.ally_ships and combat.axes_ships:
+# #     if itterable <= 0:
+# #         break
+# #     print('')
+# #     print('---')
+# #     print([s.position for s in combat.ally_ships])
+# #     print([s.position for s in combat.axes_ships])
+
+# #     print([s.hull_points for s in combat.ally_ships])
+# #     print([s.hull_points for s in combat.axes_ships])
+# #     combat.move_ships(percent_of_day_progressed=0.1)
+# #     combat.day_elapsed += day_percent
+# #     combat.assign_targets()
+# #     combat.exchange_blasts()
+# #     itterable -= 1
+
+# # print(f"Time elapsed: {float(int(combat.day_elapsed * 100) / 100)} days")
+# # for ship in combat.ally_ships:
+# #     print('')
+# #     print(ship)
+# #     # print(ship.position)
+# #     # print(ship.hull_points)
+# #     # print(ship.armor_points)
+# #     # print(ship.shield_points)
+
+
+# # for ship in combat.axes_ships:
+# #     print('')
+# #     print(ship)
+# #     # print(ship.position)
+# #     # print(ship.hull_points)
+# #     # print(ship.armor_points)
+# #     # print(ship.shield_points)
+
+# # )

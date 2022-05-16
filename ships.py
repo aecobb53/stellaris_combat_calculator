@@ -49,9 +49,9 @@ class BaseShipClass:
         self.computer_system = None
 
 
-        self.default_hull_points = self.hull_points
-        self.default_armor_points = self.armor_points
-        self.default_shield_points = self.shield_points
+        # self.default_hull_points = self.hull_points
+        # self.default_armor_points = self.armor_points
+        # self.default_shield_points = self.shield_points
 
         self.countdown_until_ready_to_shoot = 0
         self.max_range = None
@@ -75,6 +75,10 @@ class BaseShipClass:
         self.my_id = uuid.uuid4()
         self.max_range = max([t.weapon.range for t in self.turrets])
         self.resting_range = self.max_range # This depends on the computer not the range but i needed it to be set somehow
+
+        self.default_hull_points = self.hull_points
+        self.default_armor_points = self.armor_points
+        self.default_shield_points = self.shield_points
 
     def add_turret(self, turret_type):
         print(f"Adding turret type {turret_type}")
