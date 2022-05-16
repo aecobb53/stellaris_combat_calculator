@@ -185,10 +185,12 @@ class Combat:
             if target:
                 distance = self._ship_distance(ship, target)
                 for turret in ship.turrets:
+                    if turret.weapon is None:
+                        continue
                     # print(turret.weapon.time_until_next_fire)
                     if turret.weapon.time_until_next_fire > 0:
                         continue
-                    if turret.weapon.range >= distance:
+                    if turret.weapon.range is None or turret.weapon.range >= distance:
                         shield, armor, hull = turret.weapon.fire(target)
                         target.shield_points = shield
                         target.armor_points = armor
@@ -199,10 +201,12 @@ class Combat:
             if target:
                 distance = self._ship_distance(ship, target)
                 for turret in ship.turrets:
+                    if turret.weapon is None:
+                        continue
                     # print(turret.weapon.time_until_next_fire)
                     if turret.weapon.time_until_next_fire > 0:
                         continue
-                    if turret.weapon.range >= distance:
+                    if turret.weapon.range is None or turret.weapon.range >= distance:
                         shield, armor, hull = turret.weapon.fire(target)
                         target.shield_points = shield
                         target.armor_points = armor
@@ -245,10 +249,14 @@ class Combat:
         """
         for ship in self.ally_ships:
             for turret in ship.turrets:
+                if turret.weapon is None:
+                    continue
                 turret.weapon.reduce_cooldown(time)
 
         for ship in self.axes_ships:
             for turret in ship.turrets:
+                if turret.weapon is None:
+                    continue
                 turret.weapon.reduce_cooldown(time)
 
     def retro(self):
@@ -368,6 +376,8 @@ class Combat:
             cost_motes += ship.cost_motes if ship.cost_motes else 0
             cost_gasses += ship.cost_gasses if ship.cost_gasses else 0
             for turret in ship.turrets:
+                if turret.weapon is None:
+                    continue
                 cost_alloys += turret.weapon.cost_alloys if turret.weapon.cost_alloys else 0
                 cost_crystals += turret.weapon.cost_crystals if turret.weapon.cost_crystals else 0
                 cost_motes += turret.weapon.cost_motes if turret.weapon.cost_motes else 0
@@ -503,8 +513,8 @@ class Combat:
             for ship in test_axes_ships:
                 ship.build()
 
-            print(self.calculate_cost(test_ally_ships))
-            print(len(test_ally_ships))
+            # print(self.calculate_cost(test_ally_ships))
+            # print(len(test_ally_ships))
 
             result = self.iterative_battle(
                 ally_list=test_ally_ships,
@@ -529,7 +539,7 @@ class Combat:
             print(f"Percent Loss Success Rate: {self._float_sizer(result['percent_loss_success'] * 100, 2)}%")
             # Percent cost to produce navies
             # Time to complete battles
-            print('')
+            # self.show_results(result)
         
 
     # def find_domination_count(self):
@@ -625,13 +635,35 @@ ds.set_stern('gunship')
 ds.turrets[0].set_weapon('laser')
 ds.turrets[1].set_weapon('laser')
 
+cr = Cruiser()
+cr.set_bow('artillery')
+cr.set_core('artillery')
+cr.set_stern('broadside')
+cr.turrets[0].set_weapon('laser')
+cr.turrets[1].set_weapon('mass_driver')
+cr.turrets[2].set_weapon('laser')
+cr.turrets[3].set_weapon('mass_driver')
+
+cr2 = Cruiser()
+cr2.set_bow('torpedo')
+cr2.set_core('hangar')
+cr2.set_stern('broadside')
+cr2.turrets[0].set_weapon('laser')
+cr2.turrets[1].set_weapon('normal_missle')
+cr2.turrets[2].set_weapon('normal_missle')
+cr2.turrets[3].set_weapon('flak_gun')
+cr2.turrets[4].set_weapon('flak_gun')
+cr2.turrets[5].set_weapon('regular_strike_craft')
+
 # Ally composition
 build_fleet(co, ally_ships, 1)
-build_fleet(ds, ally_ships, 4)
+build_fleet(ds, ally_ships, 1)
+build_fleet(cr2, ally_ships, 1)
 
 # Axes composition
-build_fleet(co, axes_ships, 7)
-build_fleet(ds, axes_ships, 7)
+build_fleet(co, axes_ships, 10)
+build_fleet(ds, axes_ships, 5)
+build_fleet(cr, axes_ships, 1)
 
 # for ship in ally_ships:
 #     ship.build()
@@ -660,7 +692,8 @@ combat.iterativly_fill_fleet(
     axes_list=axes_ships,
     fill_list=[
         co,
-        ds
+        ds,
+        cr
     ],
     fleet_limit=100,
     attempt_count=10,

@@ -48,11 +48,6 @@ class BaseShipClass:
         self.defenses = []
         self.computer_system = None
 
-
-        # self.default_hull_points = self.hull_points
-        # self.default_armor_points = self.armor_points
-        # self.default_shield_points = self.shield_points
-
         self.countdown_until_ready_to_shoot = 0
         self.max_range = None
 
@@ -73,7 +68,9 @@ class BaseShipClass:
 
     def build(self):
         self.my_id = uuid.uuid4()
-        self.max_range = max([t.weapon.range for t in self.turrets])
+        self.max_range = max([
+            t.weapon.range for t in self.turrets if t.weapon is not None and t.weapon.range is not None
+        ])
         self.resting_range = self.max_range # This depends on the computer not the range but i needed it to be set somehow
 
         self.default_hull_points = self.hull_points
