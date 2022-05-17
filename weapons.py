@@ -43,6 +43,49 @@ class BaseWeaponClass:
         self.time_until_next_fire -= time
 
 
+"""
+    def small(self):
+        self.cost_alloys = 
+        self.cost_crystals = 
+        self.power_required = 
+        self.damage_per_hit = (, )
+        self.range = 
+        self.tracking = 
+
+    def medium(self):
+        self.cost_alloys = 
+        self.cost_crystals = 
+        self.power_required = 
+        self.damage_per_hit = (, )
+        self.range = 
+        self.tracking = 
+
+    def large(self):
+        self.cost_alloys = 
+        self.cost_crystals = 
+        self.power_required = 
+        self.damage_per_hit = (, )
+        self.range = 
+        self.tracking = 
+
+    def __init__(self):
+        self.cooldown = 
+        self.accuracy = 
+        self.shield_damage_multiplier =  # % or None for ignores
+        self.armor_damage_multiplier =  # % or None for ignores
+        self.hull_damage_multiplier =  # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+"""
 
 # Energy
 ## Anti-Armor
@@ -89,23 +132,335 @@ class Laser(BaseWeaponClass):
         self.range = 80
         self.tracking = .05
 
-# plasma_launcher
-# lance
+class PlasmaLauncher(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 5.1
+        self.accuracy = 80
+        self.shield_damage_multiplier = 0.25 # % or None for ignores
+        self.armor_damage_multiplier = 2.0 # % or None for ignores
+        self.hull_damage_multiplier = 1.5 # % or None for ignores
 
-# ## Anti-Hull
-# mining_laser
-# particle_launcher
-# matter_disintegrator
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
 
-# ## Penetrating
-# disruptor
-# cloud_lightning
-# arc_emitter
+        self.time_until_next_fire = 0
 
-# ## Anti_Shield
-# energy_siphon
-# null_void_beam
+    def small(self):
+        self.cost_alloys = 22
+        self.cost_gasses = 0.33
+        self.power_required = 17
+        self.damage_per_hit = (20, 42)
+        self.range = 30
+        self.tracking = 0.4
 
+    def medium(self):
+        self.cost_alloys = 44
+        self.cost_gasses = 0.65
+        self.power_required = 30
+        self.damage_per_hit = (50, 105)
+        self.range = 30
+        self.tracking = 0.2
+
+    def large(self):
+        self.cost_alloys = 88
+        self.cost_gasses = 1.3
+        self.power_required = 59
+        self.damage_per_hit = (120, 252)
+        self.range = 70
+        self.tracking = 0.05
+
+class Lance(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 8
+        self.accuracy = 85
+        self.shield_damage_multiplier = 0.5 # % or None for ignores
+        self.armor_damage_multiplier = 2.0 # % or None for ignores
+        self.hull_damage_multiplier = 1.5 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def extra_large(self):
+        self.cost_alloys = 229
+        self.cost_crystals = 3.38
+        self.power_required = 250
+        self.damage_per_hit = (800, 2000)
+        self.range = 150
+        self.tracking = 0.0
+
+## Anti-Hull
+class MiningLaser(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 4
+        self.accuracy = 70
+        self.shield_damage_multiplier = 0.5 # % or None for ignores
+        self.armor_damage_multiplier = 1.25 # % or None for ignores
+        self.hull_damage_multiplier = 1.75 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def small(self):
+        self.cost_alloys = 13
+        self.power_required = 7
+        self.damage_per_hit = (9, 22)
+        self.range = 30
+        self.tracking = 0.75
+
+    def medium(self):
+        self.cost_alloys = 26
+        self.power_required = 13
+        self.damage_per_hit = (23, 55)
+        self.range = 60
+        self.tracking = 0.7
+
+class ParticleLauncher(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 16
+        self.accuracy = 90
+        self.shield_damage_multiplier = 0.5 # % or None for ignores
+        self.armor_damage_multiplier = 1.5 # % or None for ignores
+        self.hull_damage_multiplier = 1.75 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def large(self):
+        self.cost_alloys = 114
+        self.cost_crystals = 1.69
+        self.power_required = 90
+        self.damage_per_hit = (468, 1040)
+        self.range = 130
+        self.tracking = 0.0
+
+class MatterDisintegrator(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 4.5
+        self.accuracy = 90
+        self.shield_damage_multiplier = 0.5 # % or None for ignores
+        self.armor_damage_multiplier = 1.5 # % or None for ignores
+        self.hull_damage_multiplier = 2.0 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def small(self):
+        self.cost_alloys = 29
+        self.cost_crystals = 0.43
+        self.power_required = 25
+        self.damage_per_hit = (20, 49)
+        self.range = 60
+        self.tracking = 0.6
+
+    def medium(self):
+        self.cost_alloys = 57
+        self.cost_crystals = 0.85
+        self.power_required = 50
+        self.damage_per_hit = (50, 123)
+        self.range = 90
+        self.tracking = 0.3
+
+    def large(self):
+        self.cost_alloys = 114
+        self.cost_crystals = 1.69
+        self.power_required = 100
+        self.damage_per_hit = (120, 294)
+        self.range = 120
+        self.tracking = 0.05
+
+## Penetrating
+class Disruptor(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 6.1
+        self.accuracy = 100
+        self.shield_damage_multiplier = None # % or None for ignores
+        self.armor_damage_multiplier = None # % or None for ignores
+        self.hull_damage_multiplier = 1.0 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def small(self):
+        self.cost_alloys = 22
+        self.cost_crystals = 0.33
+        self.power_required = 17
+        self.damage_per_hit = (1, 30)
+        self.range = 30
+        self.tracking = 0.6
+
+    def medium(self):
+        self.cost_alloys = 44
+        self.cost_crystals = 0.65
+        self.power_required = 30
+        self.damage_per_hit = (1, 75)
+        self.range = 50
+        self.tracking = 0.35
+
+class CloudLightning(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 6
+        self.accuracy = 100
+        self.shield_damage_multiplier = None # % or None for ignores
+        self.armor_damage_multiplier = None # % or None for ignores
+        self.hull_damage_multiplier = 1.0 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def large(self):
+        self.cost_alloys = 17
+        self.power_required = 40
+        self.damage_per_hit = (1, 136)
+        self.range = 60
+        self.tracking = 0.3
+
+class ArcEmitter(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 8.1
+        self.accuracy = 100
+        self.shield_damage_multiplier = None # % or None for ignores
+        self.armor_damage_multiplier = None # % or None for ignores
+        self.hull_damage_multiplier = 1.0 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def extra_large(self):
+        self.cost_alloys = 229
+        self.cost_crystals = 3.38
+        self.power_required = 250
+        self.damage_per_hit = (1, 1700)
+        self.range = 150
+        self.tracking = 0.0
+
+## Anti_Shield
+class EnergySiphon(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 4
+        self.accuracy = 75
+        self.shield_damage_multiplier = 2.0 # % or None for ignores
+        self.armor_damage_multiplier = 0.25 # % or None for ignores
+        self.hull_damage_multiplier = 1.0 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def small(self):
+        self.cost_alloys = 15
+        self.power_required = 10
+        self.damage_per_hit = (10, 27)
+        self.range = 50
+        self.tracking = 0.5
+
+class NullVoidBeam(BaseWeaponClass):
+    def __init__(self):
+        self.cooldown = 4.4
+        self.accuracy = 90
+        self.shield_damage_multiplier = 4.0 # % or None for ignores
+        self.armor_damage_multiplier = 0.25 # % or None for ignores
+        self.hull_damage_multiplier = 0.25 # % or None for ignores
+
+        self.cost_alloys = None
+        self.cost_crystals = None
+        self.cost_motes = None
+        self.cost_gasses = None
+        self.power_required = None
+        self.damage_per_hit = None
+        self.range = None
+        self.tracking = None # %
+
+        self.time_until_next_fire = 0
+
+    def small(self):
+        self.cost_alloys = 13
+        self.power_required = 7
+        self.damage_per_hit = (6, 16)
+        self.range = 60
+        self.tracking = 0.6
+
+    def medium(self):
+        self.cost_alloys = 26
+        self.power_required = 13
+        self.damage_per_hit = (15, 40)
+        self.range = 90
+        self.tracking = 0.3
+
+    def large(self):
+        self.cost_alloys = 52
+        self.power_required = 26
+        self.damage_per_hit = (36, 95)
+        self.range = 120
+        self.tracking = 0.05
 
 # Kenetic
 class MassDriver(BaseWeaponClass):

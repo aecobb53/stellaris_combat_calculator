@@ -2,6 +2,11 @@ import copy
 
 from weapons import (
     Laser,
+    PlasmaLauncher,
+    Lance,
+    MiningLaser,
+    ParticleLauncher,
+    MatterDisintegrator,
     MassDriver,
     NormalMissiles,
     RegularStrikeCraft,
@@ -10,6 +15,16 @@ from weapons import (
 
 weapon_name_map = {
     'laser': 'Laser',
+    'plasma_launcher': 'PlasmaLauncher',
+    'lance': 'Lance',
+    'mining_laser': 'MiningLaser',
+    'particle_launcher': 'ParticleLauncher',
+    'matter_disintegrator': 'MatterDisintegrator',
+    'disruptor': 'Disruptor',
+    CloudLightning
+    ArcEmitter
+    EnergySiphon
+    NullVoidBeam
     'mass_driver': 'MassDriver',
     'normal_missle': 'NormalMissiles',
     'regular_strike_craft': 'RegularStrikeCraft',
