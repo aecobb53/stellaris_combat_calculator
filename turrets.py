@@ -7,6 +7,12 @@ from weapons import (
     MiningLaser,
     ParticleLauncher,
     MatterDisintegrator,
+    MatterDisintegrator,
+    Disruptor,
+    CloudLightning,
+    ArcEmitter,
+    EnergySiphon,
+    NullVoidBeam,
     MassDriver,
     NormalMissiles,
     RegularStrikeCraft,
@@ -21,11 +27,12 @@ weapon_name_map = {
     'particle_launcher': 'ParticleLauncher',
     'matter_disintegrator': 'MatterDisintegrator',
     'disruptor': 'Disruptor',
-    CloudLightning
-    ArcEmitter
-    EnergySiphon
-    NullVoidBeam
+    'cloud_lightning': 'CloudLightning',
+    'arc_emitter': 'ArcEmitter',
+    'energy_siphon': 'EnergySiphon',
+    'null_void_beam': 'NullVoidBeam',
     'mass_driver': 'MassDriver',
+
     'normal_missle': 'NormalMissiles',
     'regular_strike_craft': 'RegularStrikeCraft',
     'flak_gun': 'FlakGun',
