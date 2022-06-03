@@ -1,4 +1,7 @@
 import copy
+import random
+
+from utils import load_config
 
 from weapons import (
     Laser,
@@ -41,6 +44,26 @@ weapon_name_map = {
 class BaseTurretClass:
     def __init__(self):
         self.countdown_until_ready_to_shoot = 0
+        self.config = load_config()
+
+        self.target_id = None
+
+    def select_target(self, targets):
+        """
+        Take a list of targets. Randomize the list. Associate the targets with how likely the turret is to select them
+        Order the list based on the highest selection
+        Return the most likely (knowing there are likely more than one ship of the same target value which is why we randomize it)
+        """
+        selection = []
+        random.shuffle(targets)
+        for target in targets:
+            turret_class = type(self).__name__
+            ship_class = type(target).__name__
+            ship_class_constant = self.config['turret_targeting_class_modifiers'][turret_class][ship_class]
+            selection.append((target, ship_class_constant))
+        selection.sort(key=lambda i: i[1], reverse=True)
+        return selection[0][0]
+
 
 class Small(BaseTurretClass):
     def __init__(self):

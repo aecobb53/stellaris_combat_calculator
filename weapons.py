@@ -5,6 +5,34 @@ Assumed fully upgraded due to MVP1
 """
 
 class BaseWeaponClass:
+    def __init__(self):
+        is_point_defense = False
+        is_missle = False
+        is_strike_craft = False
+
+# a = [
+#     'Small',
+#     'Medium',
+#     'Large',
+#     'ExtraLarge',
+#     'Titan',
+#     'Guided',
+#     'PointDefense',
+#     'Hanger',
+# ]
+# b = [
+#     'Corvette',
+#     'Destroyer',
+#     'Cruiser',
+#     'Battleship',
+#     'Titan',
+# ]
+
+# for i in a:
+#     print(f"    {i}:")
+#     for j in b:
+#         print(f"        {j}: 1")
+
     def fire(self, target):
         self.time_until_next_fire = self.cooldown
         shield_points = target.shield_points
@@ -514,6 +542,7 @@ class MassDriver(BaseWeaponClass):
 # Explosive
 class NormalMissiles(BaseWeaponClass):
     def __init__(self):
+        self.is_missle = True
         self.cooldown = 6.8
         self.accuracy = 100
         self.shield_damage_multiplier = None # % or None for ignores
@@ -546,6 +575,7 @@ class NormalMissiles(BaseWeaponClass):
 # Strike Craft
 class RegularStrikeCraft(BaseWeaponClass):
     def __init__(self):
+        self.is_strike_craft = True
         self.cooldown = 2.3
         self.accuracy = 100
         self.shield_damage_multiplier = None # % or None for ignores
@@ -575,6 +605,7 @@ class RegularStrikeCraft(BaseWeaponClass):
 # Point Defense
 class FlakGun(BaseWeaponClass):
     def __init__(self):
+        self.is_point_defense = True
         self.cooldown = 0.5
         self.accuracy = 75
         self.shield_damage_multiplier = 1.0 # % or None for ignores
