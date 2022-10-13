@@ -135,43 +135,26 @@ class Combat:
         """
         self.ally_ships.sort(key=return_calculated_ship_range)
         self.axes_ships.sort(key=return_calculated_ship_range)
-        ally_list = []
-        axes_list = []
-        for ship in self.ally_ships:
-            if not axes_list:
-                axes_list = copy.deepcopy(self._sort_ship_list(self.axes_ships))
-            if ship.target_id:
-                target = self._find_ship_by_id(ship.target_id, self.axes_ships)
-                if not target:
-                    ship.target_id = None
-            if not ship.target_id:
-                target = self._ship_target_options(ship, axes_list)
-                if not target:
-                    ship.target_id = None
-                    continue
-                ship.target_id = target.my_id
-                for target_ships in self.axes_ships:
-                    if target_ships.my_id == target.my_id:
-                        target_ships.targeted_by_ids.append(ship.my_id)
-                axes_list.remove(target)
 
-        for ship in self.axes_ships:
-            if not ally_list:
-                ally_list = copy.deepcopy(self._sort_ship_list(self.ally_ships))
-            if ship.target_id:
-                target = self._find_ship_by_id(ship.target_id, self.ally_ships)
-                if not target:
-                    ship.target_id = None
-            if not ship.target_id:
-                target = self._ship_target_options(ship, ally_list)
-                if not target:
-                    ship.target_id = None
-                    continue
-                ship.target_id = target.my_id
-                for target_ships in self.ally_ships:
-                    if target_ships.my_id == target.my_id:
-                        target_ships.targeted_by_ids.append(ship.my_id)
-                ally_list.remove(target)
+        def modular_assign_targets(ship_list_1, ship_list_2):
+            temp_axes_list = copy.deepcopy(self._sort_ship_list(ship_list_2))
+            for ship in ship_list_1:
+                for turret in ship.turrets:
+                    if not turret.weapon:
+                        continue
+                    targets = []
+                    for target in temp_axes_list:
+                        distance = self._ship_distance(ship, target)
+                        if turret.weapon.range is not None:
+                            if distance > turret.weapon.range:
+                                break
+                        targets.append(target)
+                    if targets:
+                        target = turret.select_target(targets)
+                        turret.target_id = target.my_id
+
+        modular_assign_targets(self.ally_ships, self.axes_ships)
+        modular_assign_targets(self.axes_ships, self.ally_ships)
 
     def exchange_blasts(self):
         """
@@ -180,37 +163,26 @@ class Combat:
         """
         self.ally_ships.sort(key=return_calculated_ship_range)
         self.axes_ships.sort(key=return_calculated_ship_range)
+
+        def modular_exchange_blasts(turret, targets):
+            if not turret.weapon:
+                return
+            if turret.weapon.time_until_next_fire > 0:
+                return
+            if turret.target_id:
+                target = self._find_ship_by_id(turret.target_id, targets)
+                shield, armor, hull = turret.weapon.fire(target)
+                target.shield_points = shield
+                target.armor_points = armor
+                target.hull_points = hull
+
         for ship in self.ally_ships:
-            target = self._find_ship_by_id(ship.target_id, self.axes_ships)
-            if target:
-                distance = self._ship_distance(ship, target)
-                for turret in ship.turrets:
-                    if turret.weapon is None:
-                        continue
-                    # print(turret.weapon.time_until_next_fire)
-                    if turret.weapon.time_until_next_fire > 0:
-                        continue
-                    if turret.weapon.range is None or turret.weapon.range >= distance:
-                        shield, armor, hull = turret.weapon.fire(target)
-                        target.shield_points = shield
-                        target.armor_points = armor
-                        target.hull_points = hull
+            for turret in ship.turrets:
+                modular_exchange_blasts(turret, self.axes_ships)
 
         for ship in self.axes_ships:
-            target = self._find_ship_by_id(ship.target_id, self.ally_ships)
-            if target:
-                distance = self._ship_distance(ship, target)
-                for turret in ship.turrets:
-                    if turret.weapon is None:
-                        continue
-                    # print(turret.weapon.time_until_next_fire)
-                    if turret.weapon.time_until_next_fire > 0:
-                        continue
-                    if turret.weapon.range is None or turret.weapon.range >= distance:
-                        shield, armor, hull = turret.weapon.fire(target)
-                        target.shield_points = shield
-                        target.armor_points = armor
-                        target.hull_points = hull
+            for turret in ship.turrets:
+                modular_exchange_blasts(turret, self.ally_ships)
 
         for ally_ship in self.ally_ships.copy():
             if ally_ship.hull_points <= 0:
@@ -654,6 +626,13 @@ cr2.turrets[2].set_weapon('normal_missle')
 cr2.turrets[3].set_weapon('flak_gun')
 cr2.turrets[4].set_weapon('flak_gun')
 cr2.turrets[5].set_weapon('regular_strike_craft')
+
+print(co, len(co.turrets))
+print(ds, len(ds.turrets))
+print(cr, len(cr.turrets))
+print(cr2, len(cr2.turrets))
+
+
 
 # Ally composition
 build_fleet(co, ally_ships, 1)

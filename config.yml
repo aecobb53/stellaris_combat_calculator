@@ -1,0 +1,65 @@
+turret_targeting_class_modifiers:
+    Small:
+        Corvette: 1.5
+        Destroyer: 1.5
+        Cruiser: 0.5
+        Battleship: 0.5
+        Titan: 0.5
+        Guided: 0
+        craft: 0
+    Medium:
+        Corvette: 0.5
+        Destroyer: 1.5
+        Cruiser: 1.5
+        Battleship: .5
+        Titan: 0.5
+        Guided: 0
+        craft: 0
+    Large:
+        Corvette: 0.5
+        Destroyer: 0.5
+        Cruiser: 1.5
+        Battleship: 1.5
+        Titan: 1
+        Guided: 0
+        craft: 0
+    ExtraLarge:
+        Corvette: 0.01
+        Destroyer: 0.01
+        Cruiser: 1
+        Battleship: 10
+        Titan: 5
+        Guided: 0
+        craft: 0
+    Titan:
+        Corvette: 0.01
+        Destroyer: 0.01
+        Cruiser: 0.01
+        Battleship: 1
+        Titan: 10
+        Guided: 0
+        craft: 0
+    Guided:
+        Corvette: 1
+        Destroyer: 1
+        Cruiser: 1
+        Battleship: 1
+        Titan: 1
+        Guided: 0
+        craft: 0
+    PointDefense:
+        Corvette: 1
+        Destroyer: 1
+        Cruiser: 1
+        Battleship: 1
+        Titan: 1
+        Guided: 10
+        craft: 10
+    Hanger:
+        Corvette: 1
+        Destroyer: 1
+        Cruiser: 1
+        Battleship: 1
+        Titan: 1
+        Guided: 10
+        craft: 10
