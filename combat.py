@@ -135,13 +135,6 @@ class Combat:
         """
         self.ally_ships.sort(key=return_calculated_ship_range)
         self.axes_ships.sort(key=return_calculated_ship_range)
-        ally_list = []
-        axes_list = []
-
-        # For each ship
-        #     For each turret
-        #         Find the best target for it to be shooting and assign it
-        #         - Create a targeting algorithm based on gun size > enemy class > manuverability > speed
 
         def modular_assign_targets(ship_list_1, ship_list_2):
             temp_axes_list = copy.deepcopy(self._sort_ship_list(ship_list_2))
