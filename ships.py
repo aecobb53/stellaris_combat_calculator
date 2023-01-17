@@ -2,6 +2,7 @@ import json
 import re
 import uuid
 import copy
+from utils import load_config
 
 from turrets import (
     Small,
@@ -28,6 +29,12 @@ turret_name_map = {
 
 class BaseShipClass:
     def __init__(self):
+        self.config = load_config()
+
+        try:
+            base_values = self.config['ship_class_values'][self.ship_type]
+        except Exception as e:
+            e
         self.command_points = None
         self.cost_alloys = None
         self.cost_crystals = None
@@ -55,6 +62,8 @@ class BaseShipClass:
         self._my_id = None
         self.target_id = None
         self.targeted_by_ids = []
+
+
 
     @property
     def my_id(self):
@@ -102,6 +111,7 @@ class BaseShipClass:
 class Corvette(BaseShipClass):
     def __init__(self):
         super().__init__()
+        self.ship_type = 'Corvette'
         self.command_points = 1
         self.cost_alloys = 30
         self.build_time = 60
@@ -141,6 +151,7 @@ class Corvette(BaseShipClass):
 class Destroyer(BaseShipClass):
     def __init__(self):
         super().__init__()
+        self.ship_type = 'Destroyer'
         self.command_points = 2
         self.cost_alloys = 60
         self.build_time = 120
@@ -204,6 +215,7 @@ class Destroyer(BaseShipClass):
 class Cruiser(BaseShipClass):
     def __init__(self):
         super().__init__()
+        self.ship_type = 'Cruiser'
         self.command_points = 4
         self.cost_alloys = 120
         self.build_time = 240
@@ -295,6 +307,7 @@ class Cruiser(BaseShipClass):
 class Battleship(BaseShipClass):
     def __init__(self):
         super().__init__()
+        self.ship_type = 'Battleship'
         self.command_points = 8
         self.cost_alloys = 240
         self.build_time = 480
@@ -401,6 +414,7 @@ class Battleship(BaseShipClass):
 class Titan(BaseShipClass):
     def __init__(self):
         super().__init__()
+        self.ship_type = 'Titan'
         self.command_points = 16
         self.cost_alloys = 480
         self.build_time = 3600

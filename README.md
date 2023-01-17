@@ -36,3 +36,7 @@ Titanic
 ### Sockets and Defenses
 
 Sockets are the slots on the ship, Defenses are placed into the socekts.
+
+## How to interact with Combat
+
+

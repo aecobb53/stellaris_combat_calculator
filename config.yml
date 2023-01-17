@@ -1,3 +1,49 @@
+ship_class_values:
+    Corvette:
+        command_points: 1
+        cost_alloys: 30
+        build_time: 60
+        hull_points: 300
+        evasion: 0.60
+        speed: 160
+        armor_points: 0
+        shield_points: 0
+    Destroyer:
+        command_points: 2
+        cost_alloys: 60
+        build_time: 120
+        hull_points: 800
+        evasion: 0.35
+        speed: 140
+        armor_points: 0
+        shield_points: 0
+    Cruiser:
+        command_points: 4
+        cost_alloys: 120
+        build_time: 240
+        hull_points: 1800
+        evasion: 0.10
+        speed: 120
+        armor_points: 0
+        shield_points: 0
+    Battleship:
+        command_points: 8
+        cost_alloys: 240
+        build_time: 480
+        hull_points: 3000
+        evasion: 0.05
+        speed: 100
+        armor_points: 0
+        shield_points: 0
+    Titan:
+        command_points: 16
+        cost_alloys: 480
+        build_time: 3600
+        hull_points: 10000
+        evasion: 0.05
+        speed: 100
+        armor_points: 0
+        shield_points: 0
 turret_targeting_class_modifiers:
     Small:
         Corvette: 1.5

@@ -674,8 +674,8 @@ combat.iterativly_fill_fleet(
         ds,
         cr
     ],
-    fleet_limit=100,
-    attempt_count=10,
+    fleet_limit=1000,
+    attempt_count=100,
 )
 
 
