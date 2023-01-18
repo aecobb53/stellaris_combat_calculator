@@ -66,7 +66,7 @@ aaa_build_count_1 = len(pointer.buildings)
 aaa_sprawl_1 = pointer.sprawl
 aaa_research_1 = pointer.research
 aaa_research_to_sprawl_1 = pointer.research / pointer.sprawl
-markdown_text.append(f"| 10 | X | - | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl} |")
+markdown_text.append(f"| 10 | X | - | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl / pointer.research} |")
 
 
 # Largest planet possible full science
@@ -84,7 +84,7 @@ aaa_build_count_2 = len(pointer.buildings)
 aaa_sprawl_2 = pointer.sprawl
 aaa_research_2 = pointer.research
 aaa_research_to_sprawl_2 = pointer.research / pointer.sprawl
-markdown_text.append(f"| 25 | X | - | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl} |")
+markdown_text.append(f"| 25 | X | - | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl / pointer.research} |")
 
 
 # Smallest habitat possible full science
@@ -105,7 +105,7 @@ aaa_sprawl_3 = pointer.sprawl
 aaa_research_3 = pointer.research
 aaa_research_to_sprawl_3 = pointer.research / pointer.sprawl
 # 132 research all housing districts but still not actually enough housing
-markdown_text.append(f"| 4 | - | X | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl} |")
+markdown_text.append(f"| 4 | - | X | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl / pointer.research} |")
 
 # Largest habitat possible full science
 test_col_4 = Colony(name='size 8 habitat Science full science', is_habitat=True)
@@ -125,7 +125,7 @@ aaa_sprawl_4 = pointer.sprawl
 aaa_research_4 = pointer.research
 aaa_research_to_sprawl_4 = pointer.research / pointer.sprawl
 # 132 research all housing districts but still not actually enough housing
-markdown_text.append(f"| 8 | - | X | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl} |")
+markdown_text.append(f"| 8 | - | X | - | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl / pointer.research} |")
 
 
 # Smallest habitat possible full science and ascended
@@ -147,7 +147,7 @@ aaa_research_5 = pointer.research
 aaa_research_to_sprawl_5 = pointer.research / pointer.sprawl
 # 120 research all housing districts but still not actually enough housing
 # 96 research as many research districts as i can manage
-markdown_text.append(f"| 4 | - | X | - | X | {pointer.sprawl} | {pointer.research} | {pointer.sprawl} |")
+markdown_text.append(f"| 4 | - | X | - | X | {pointer.sprawl} | {pointer.research} | {pointer.sprawl / pointer.research} |")
 
 # Ring world segment
 test_col_6 = Colony(name='Ring world segment', is_ring_world=True)
@@ -168,7 +168,7 @@ aaa_research_6 = pointer.research
 aaa_research_to_sprawl_6 = pointer.research / pointer.sprawl
 # 120 research all housing districts but still not actually enough housing
 # 96 research as many research districts as i can manage
-markdown_text.append(f"| 10 | - | - | X | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl} |")
+markdown_text.append(f"| 10 | - | - | X | - | {pointer.sprawl} | {pointer.research} | {pointer.sprawl / pointer.research} |")
 
 with open('city_results_tables.md', 'w') as mdf:
     for line in markdown_text:
