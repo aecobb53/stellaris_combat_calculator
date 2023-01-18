@@ -234,10 +234,12 @@ class District:
         self,
         name: str,
         housing: int = 0,
+        research: int = 0,
         jobs: List[Job] = [],
     ):
         self.name = name
         self.housing = housing
+        self.research = research
         self.jobs = jobs
 
     @property
@@ -251,14 +253,11 @@ class District:
 
     @classmethod
     def build(cls, dct):
-        try:
-            obj = cls(
-                name=dct.get('name'),
-                housing=dct.get('housing'),
-                jobs=[Job.build(j) for j in dct.get('jobs', [])],
-            )
-        except Exception as e:
-            e
+        obj = cls(
+            name=dct.get('name'),
+            housing=dct.get('housing'),
+            jobs=[Job.build(j) for j in dct.get('jobs', [])],
+        )
         return obj
 
     def add_jobs(self, job: Job, count: int = 1):
@@ -354,14 +353,19 @@ class Colony:
         name: str = '',
         population: int = 0,
         branch_offices: int = 0,
-        districts: List[District] = [],
-        buildings: List[Building] = [],
+        is_habitat: bool = False,
+        is_ring_world: bool = False,
+        ascension_level: int = 0,
     ):
+        x=1
         self.name = name
         self.population = population
         self.branch_offices = branch_offices
-        self.districts = districts
-        self.buildings = buildings
+        self.is_habitat = is_habitat
+        self.is_ring_world = is_ring_world
+        self.ascension_level = ascension_level
+        self.districts = []
+        self.buildings = []
 
     @property
     def put(self):
@@ -397,18 +401,23 @@ class Colony:
     @property
     def sprawl(self):
         sprawl = 0
-        sprawl += self.population # Population
-        sprawl += 10 # Colony
-        sprawl += len(self.districts) * .5 # Districts
-        sprawl += self.branch_offices * 2 # Districts
+        if self.is_habitat:
+            sprawl_modifier = 1 - (0.05 * self.ascension_level)
+        else:
+            sprawl_modifier = 1
+        sprawl += (self.population * sprawl_modifier) # Population
+        sprawl += (10 * sprawl_modifier) # Colony
+        sprawl += (len(self.districts) * .5 * sprawl_modifier) # Districts
+        sprawl += (self.branch_offices * 2 * sprawl_modifier) # Districts
         return sprawl
 
     @property
     def research(self):
         research = 0
-        research_multiplier = 1
-        for district in self.districts:
-            research += district.research
+        if self.is_habitat:
+            research_multiplier = 1 + 0.1 + (0.1 * (0.25 * self.ascension_level))
+        else:
+            research_multiplier = 1
         for building in self.buildings:
             research += building.research
             research_multiplier += building.research_multiplier
@@ -502,208 +511,210 @@ class SprawlCalculator:
 
 
 
-sc = SprawlCalculator()
+# sc = SprawlCalculator()
 
-for _ in range(50):
-    sc.add_system(system=System())
+# for _ in range(50):
+#     sc.add_system(system=System())
 
-# Jobs
-job_clerk = Job('Clerk', trade_value=4, amenities=2)
-job_technician = Job('Technician', energy=6)
-job_miner = Job('Miner', minerals=6)
-job_farmer = Job('Farmer', food=6)
-job_researcher = Job('Researcher', research=4)
-job_unity = Job('Unity', unity=4)
-# job_amenities = Job('Amenities', amenities=)
+# # Jobs
+# job_clerk = Job('Clerk', trade_value=4, amenities=2)
+# job_technician = Job('Technician', energy=6)
+# job_miner = Job('Miner', minerals=6)
+# job_farmer = Job('Farmer', food=6)
+# job_researcher = Job('Researcher', research=4)
+# job_unity = Job('Unity', unity=4)
+# # job_amenities = Job('Amenities', amenities=)
 
-# Districts
-district_city = District(
-    name='City', housing=5, jobs=[job_clerk]
-)
-district_generator = District(
-    name='Generator', housing=2, jobs=[job_technician for _ in range(4)]
-)
-district_mining = District(
-    name='Mining', housing=2, jobs=[job_miner for _ in range(4)]
-)
-district_agriculture = District(
-    name='Agriculture', housing=2, jobs=[job_farmer for _ in range(4)]
-)
-
-# Buildings
-building_system = Building(
-    name='System', jobs=[], housing=12 , amenities=12
-)
-building_energy_nexus = Building(
-    name='Energy Nexus', jobs=[job_technician for _ in range(2)]
-)
-building_mineral_hub = Building(
-    name='Mineral Hub', jobs=[job_miner for _ in range(2)]
-)
-building_food_center = Building(
-    name='Food Center', jobs=[job_farmer for _ in range(2)]
-)
-building_research = Building(
-    name='Research', jobs=[job_researcher]
-)
-building_unity = Building(
-    name='Unity', jobs=[job_unity]
-)
-building_housing = Building(
-    name='Paradise Dome', housing=6, amenities=10
-)
-
-
-
-
-col1 = Colony(name='Starting Colony', branch_offices=0)
-
-col1.add_district(district=district_city, count=6)
-col1.add_district(district=district_generator, count=8)
-col1.add_district(district=district_mining, count=8)
-
-col1.add_building(building=building_system)
-col1.add_building(building=building_energy_nexus, count=1)
-col1.add_building(building=building_mineral_hub, count=1)
-col1.add_building(building=building_unity, count=4)
-col1.add_building(building=building_housing, count=1)
-
-sc.add_colony(col1)
-
-# J1 = col1.jobs
-required_population = col1.required_population
-housing = col1.housing
-dist_count = len(col1.districts)
-build_count = len(col1.buildings)
-
-x=1
-
-col2 = Colony(name='Science Colony', branch_offices=0)
-x=1
-
-# col2.add_district(district=district_city, count=6)
-# col2.add_district(district=district_generator, count=6)
-# col2.add_district(district=district_mining, count=6)
-
-# col2.add_building(building=building_system)
-# col2.add_building(building=building_research, count=6)
-# col2.add_building(building=building_mineral_hub, count=1)
-# col2.add_building(building=building_unity, count=4)
-# col2.add_building(building=building_housing, count=1)
-
-sc.add_colony(col2)
-
-# J1 = col2.jobs
-required_population = col2.required_population
-housing = col2.housing
-dist_count = len(col2.districts)
-build_count = len(col2.buildings)
-
-x=1
-
-
-
-# # d_city = District(
-# #     name='City District',
-# #     housing=5,
-# # )
-# # d_generator = District(
-# #     name='Generator District',
-# #     housing=2,
-# # )
-# # d_generator.add_jobs(
-# #     job=Job(
-# #         name='Technician',
-# #         energy=6,
-# #     ),
-# #     count=2
-# # )
-
-# col1.add_district(
-#     district=d_city,
-#     count=4
+# # Districts
+# district_city = District(
+#     name='City', housing=5, jobs=[job_clerk]
 # )
-# for _ in range(4):
-#     col1.districts.append(District(
-#         name='Generator District',
-#         housing=2,
-#         jobs=[Job(
-#             name='Technician',
-#             energy=6,
-#         )]
-#     ))
+# district_generator = District(
+#     name='Generator', housing=2, jobs=[job_technician for _ in range(4)]
+# )
+# district_mining = District(
+#     name='Mining', housing=2, jobs=[job_miner for _ in range(4)]
+# )
+# district_agriculture = District(
+#     name='Agriculture', housing=2, jobs=[job_farmer for _ in range(4)]
+# )
+
+# # Buildings
+# building_system = Building(
+#     name='System', jobs=[], housing=12 , amenities=12
+# )
+# building_energy_nexus = Building(
+#     name='Energy Nexus', jobs=[job_technician for _ in range(2)]
+# )
+# building_mineral_hub = Building(
+#     name='Mineral Hub', jobs=[job_miner for _ in range(2)]
+# )
+# building_food_center = Building(
+#     name='Food Center', jobs=[job_farmer for _ in range(2)]
+# )
+# building_research = Building(
+#     name='Research', jobs=[job_researcher]
+# )
+# building_unity = Building(
+#     name='Unity', jobs=[job_unity]
+# )
+# building_housing = Building(
+#     name='Paradise Dome', housing=6, amenities=10
+# )
+
+
+
+
+# col1 = Colony(name='Starting Colony', branch_offices=0)
+
+# col1.add_district(district=district_city, count=6)
+# col1.add_district(district=district_generator, count=8)
+# col1.add_district(district=district_mining, count=8)
+
+# col1.add_building(building=building_system)
+# col1.add_building(building=building_energy_nexus, count=1)
+# col1.add_building(building=building_mineral_hub, count=1)
+# col1.add_building(building=building_unity, count=4)
+# col1.add_building(building=building_housing, count=1)
+
+# sc.add_colony(col1)
+
+# # J1 = col1.jobs
+# required_population = col1.required_population
+# housing = col1.housing
+# dist_count = len(col1.districts)
+# build_count = len(col1.buildings)
 
 # x=1
 
-# for _ in range(4):
-#     col1.districts.append(District(
-#         name='Mining District',
-#         housing=2,
-#         jobs=[Job(
-#             name='Miner',
-#             minerals=4,
-#         )]
-#     ))
-# # Mining District
-# # Agriculture District
+# a = districts
 
-# # Industrial District
-# # Trade District
+# col2 = Colony(name='Science Colony', branch_offices=0)
+# x=1
 
+# # col2.add_district(district=district_city, count=6)
+# # col2.add_district(district=district_generator, count=6)
+# # col2.add_district(district=district_mining, count=6)
 
+# # col2.add_building(building=building_system)
+# # col2.add_building(building=building_research, count=6)
+# # col2.add_building(building=building_mineral_hub, count=1)
+# # col2.add_building(building=building_unity, count=4)
+# # col2.add_building(building=building_housing, count=1)
 
-# c = Colony()
-# c.add_building(
-#     Building(
-#         name='Imperial Palace',
-#         jobs=[
-#             Job(name='Research Director', research=6),
-#             Job(name='Research Director', research=6),
-#             Job(name='Research Director', research=6)
-#         ]
-#     )
-# )
-# c.add_building(
-#     Building(
-#         name='Research Institute',
-#         jobs=[
-#             Job(name='Research Director', research=6)
-#         ],
-#         research_multiplier=.15
-#     )
-# )
-# c.add_building(
-#     Building(
-#         name='Advanced Research Complexes',
-#         jobs=[
-#             Job(name='Researcher', research=4),
-#             Job(name='Researcher', research=4),
-#             Job(name='Researcher', research=4),
-#             Job(name='Researcher', research=4),
-#             Job(name='Researcher', research=4),
-#             Job(name='Researcher', research=4)
-#         ]
-#     )
-# )
+# sc.add_colony(col2)
+
+# # J1 = col2.jobs
+# required_population = col2.required_population
+# housing = col2.housing
+# dist_count = len(col2.districts)
+# build_count = len(col2.buildings)
+
+# x=1
 
 
-# for i in range(10):
-#     sc.add_systems(System())
 
-# sc.add_colony(c)
+# # # d_city = District(
+# # #     name='City District',
+# # #     housing=5,
+# # # )
+# # # d_generator = District(
+# # #     name='Generator District',
+# # #     housing=2,
+# # # )
+# # # d_generator.add_jobs(
+# # #     job=Job(
+# # #         name='Technician',
+# # #         energy=6,
+# # #     ),
+# # #     count=2
+# # # )
 
-# s1 = sc.relative_research
+# # col1.add_district(
+# #     district=d_city,
+# #     count=4
+# # )
+# # for _ in range(4):
+# #     col1.districts.append(District(
+# #         name='Generator District',
+# #         housing=2,
+# #         jobs=[Job(
+# #             name='Technician',
+# #             energy=6,
+# #         )]
+# #     ))
+
+# # x=1
+
+# # for _ in range(4):
+# #     col1.districts.append(District(
+# #         name='Mining District',
+# #         housing=2,
+# #         jobs=[Job(
+# #             name='Miner',
+# #             minerals=4,
+# #         )]
+# #     ))
+# # # Mining District
+# # # Agriculture District
+
+# # # Industrial District
+# # # Trade District
 
 
-# sc.add_colony(c)
 
-# s2 = sc.relative_research
+# # c = Colony()
+# # c.add_building(
+# #     Building(
+# #         name='Imperial Palace',
+# #         jobs=[
+# #             Job(name='Research Director', research=6),
+# #             Job(name='Research Director', research=6),
+# #             Job(name='Research Director', research=6)
+# #         ]
+# #     )
+# # )
+# # c.add_building(
+# #     Building(
+# #         name='Research Institute',
+# #         jobs=[
+# #             Job(name='Research Director', research=6)
+# #         ],
+# #         research_multiplier=.15
+# #     )
+# # )
+# # c.add_building(
+# #     Building(
+# #         name='Advanced Research Complexes',
+# #         jobs=[
+# #             Job(name='Researcher', research=4),
+# #             Job(name='Researcher', research=4),
+# #             Job(name='Researcher', research=4),
+# #             Job(name='Researcher', research=4),
+# #             Job(name='Researcher', research=4),
+# #             Job(name='Researcher', research=4)
+# #         ]
+# #     )
+# # )
 
 
-sprl = sc.sprawl
-sci = sc.research
+# # for i in range(10):
+# #     sc.add_systems(System())
 
-with open('current_sprawl_calculation_example.json', 'w') as df:
-    df.write(json.dumps(sc.put, indent=4))
+# # sc.add_colony(c)
 
-x=1
+# # s1 = sc.relative_research
+
+
+# # sc.add_colony(c)
+
+# # s2 = sc.relative_research
+
+
+# sprl = sc.sprawl
+# sci = sc.research
+
+# with open('current_sprawl_calculation_example.json', 'w') as df:
+#     df.write(json.dumps(sc.put, indent=4))
+
+# x=1
